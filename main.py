@@ -9,7 +9,7 @@ def main() -> None:
 
     df = parse_gbx_bt(file)
 
-    print(df)
+    print(f"Number of ops in the Backtest {file.rsplit('/', maxsplit=1)[-1].rsplit('.', maxsplit=1)[0]}: {df.shape[0]}")  # type: ignore
 
 
 if __name__ == "__main__":
