@@ -52,7 +52,7 @@ ParsingPipeline = Callable[[T], T]
 
 def compose(*functions: ParsingPipeline) -> ParsingPipeline:
     """Composes functions into a single function"""
-    return reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)  # type: ignore
+    return reduce(lambda f, g: lambda x: g(f(x)), functions, lambda x: x)  # type: ignore
 
 
 def read_htm_from(filename: T, mode: T = "r", encoding: T = "utf-8") -> T:
@@ -254,3 +254,19 @@ def assign_correct_data_type_to(
                 return df
 
     return df
+
+
+parse_gbx_bt: ParsingPipeline = compose(
+    partial(read_htm_from, mode="r", encoding="utf-8"),  # type: ignore
+    read_table_from,  # type: ignore
+    read_rows_from,  # type: ignore
+    partial(  # type: ignore
+        extract_row_data_from,  # type: ignore
+        start_markers=["Closed Transactions:"],  # type: ignore
+        continue_markers=["Genbox", "balance", "Deposit"],  # type: ignore
+        end_markers=["Closed P/L:"],  # type: ignore
+    ),
+    separate_columns_in,  # type: ignore
+    convert_to_dataframe,  # type: ignore
+    assign_correct_data_type_to,  # type: ignore
+)
