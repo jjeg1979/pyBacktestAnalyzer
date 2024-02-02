@@ -1,30 +1,28 @@
+from pathlib import Path
+from typing import List, Dict
+
 from src.parsegbx.parsegbx import (
-    read_htm_from,
-    read_table_from,
-    read_rows_from,
-    extract_row_data_from,
-    separate_columns_in,
-    convert_to_dataframe,
-    assign_correct_data_type_to,
+    parse_gbx_bt,
+)
+
+from src.parsegbx.gatherbtfiles import (
+    process_and_group_files,  # type: ignore
 )
 
 
 def main() -> None:
     """Main function"""
-    htm_str = read_htm_from("payload/acd7_S_3_01_231231_set133.htm")
-    table = read_table_from(htm_str)
-    rows = read_rows_from(table)
-    row_data = extract_row_data_from(
-        rows,
-        ["Closed Transactions:"],
-        ["Genbox", "balance", "Deposit"],
-        ["Closed P/L:"],
-    )
-    df = assign_correct_data_type_to(
-        convert_to_dataframe(separate_columns_in(row_data))
-    )
+    group_names: List[str] = ["IS", "OS", "ISOS"]
+    files: Dict[str, List[Path]] = process_and_group_files(group_names=group_names)("payload")  # type: ignore
+    # for groupname, filenames in files.items():  # type: ignore
+    #     print(f"Group: {groupname}")
+    #     for file in filenames:  # type: ignore
+    #         print(f"  - {file.name}")
+    file = files["ISOS"][0]  # type: ignore
 
-    print(df)
+    df = parse_gbx_bt(str(file))  # type: ignore
+
+    print(f"Number of ops in the Backtest {file.stem}: {df.shape[0]}")  # type: ignore
 
 
 if __name__ == "__main__":
